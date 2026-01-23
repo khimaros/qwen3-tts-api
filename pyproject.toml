@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "any-tts-api"
+version = "1.0"
+authors = [
+  { name="Brioch", email="134280928+Brioch@users.noreply.github.com" },
+]
+description = "A simple web API for TTS"
+readme = "README.md"
+requires-python = "~=3.12.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "librosa",
+    "onnxruntime-gpu",
+    "torchaudio",
+    "flask>=3.1.2",
+    "flask-cors>=6.0.2",
+    "dotenv>=0.9.9",
+    "pydub>=0.25.1",
+    "soundfile>=0.13.1",
+    "numpy<2",
+    "qwen-tts==0.0.5",
+    "transformers>=4.57.3",
+    "torch~=2.7.0",
+    "flash-attn>=2.8.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/Brioch/any-tts-api"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.10",
+]
+
+[tool.uv]
+no-build-isolation-package = ['flash-attn']
