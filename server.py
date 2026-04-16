@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import io
+import time
 from werkzeug.exceptions import HTTPException
 
 import config
@@ -47,7 +48,10 @@ def speech_api():
         )
 
     # Generate audio from the text
+    start_time = time.time()
     audio_data = tts.generate_audio(text, voice, response_format, model)
+    elapsed = time.time() - start_time
+    print(f"generation took {elapsed:.2f}s ({len(text)} chars)")
 
     # Create a BytesIO object for the response
     audio_io = io.BytesIO(audio_data)
@@ -113,9 +117,12 @@ def tts_api():
         return jsonify({"error": "Chunk size must be greater than 0."}), 400
 
     # Generate audio from the text
+    start_time = time.time()
     audio_data = tts.generate_audio(
         text, voice, response_format, model, speed, chunk_size, seed, params
     )
+    elapsed = time.time() - start_time
+    print(f"generation took {elapsed:.2f}s ({len(text)} chars)")
 
     # Create a BytesIO object for the response
     audio_io = io.BytesIO(audio_data)
