@@ -132,7 +132,13 @@ def tts_api():
     )
 
 
+@app.route("/health", methods=["GET"])
+def health_api():
+    return "", 200
+
+
 @app.route("/voices", methods=["GET"])
+@app.route("/v1/audio/voices", methods=["GET"])
 def get_voices_api():
     return jsonify({"voices": config.SUPPORTED_VOICES})
 

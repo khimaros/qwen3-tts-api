@@ -1,0 +1,33 @@
+.PHONY: all venv build build-cpu build-cuda build-rocm lint format precommit clean
+
+RUN := uv run --no-sync
+
+all: build
+
+venv:
+	uv venv --allow-existing
+
+build: build-cuda
+
+build-cpu: venv
+	uv sync --extra cpu
+
+build-cuda: venv
+	uv sync --extra gpu
+
+build-rocm: venv
+	uv sync --extra rocm-gfx1151
+	FLASH_ATTENTION_TRITON_AMD_ENABLE="TRUE" uv pip install flash-attn --no-build-isolation
+
+lint:
+	$(RUN) ruff check .
+
+format:
+	$(RUN) ruff check --fix .
+
+precommit: format lint
+
+clean:
+	rm -rf build/ dist/ *.egg-info/
+	rm -rf .venv/
+	find . -type d -name __pycache__ -exec rm -rf {} +

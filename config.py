@@ -5,6 +5,28 @@ import torch
 # Load environment variables from .env file
 load_dotenv()
 
+
+def is_rocm() -> bool:
+    return hasattr(torch.version, "hip") and torch.version.hip is not None
+
+
+def setup_rocm_env():
+    """set environment variables for optimal rocm performance."""
+    if not is_rocm():
+        return
+    env = {
+        "TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL": "1",
+        "FLASH_ATTENTION_TRITON_AMD_ENABLE": "TRUE",
+        "MIOPEN_WORKSPACE_MAX": "256000000",
+        "MIOPEN_FIND_MODE": "FAST",
+        "MIOPEN_USER_DB_PATH": os.path.expanduser("~/.cache/miopen"),
+    }
+    for k, v in env.items():
+        os.environ.setdefault(k, v)
+
+
+setup_rocm_env()
+
 VOICES_DIR = os.getenv("VOICES_DIR", "./voices")
 
 # check if path exists

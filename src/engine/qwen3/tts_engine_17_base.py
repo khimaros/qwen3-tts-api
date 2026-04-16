@@ -2,19 +2,20 @@ import utils
 import config
 import numpy as np
 from typing import Optional
-from engine.tts_engine import TTSEngine
+from engine.tts_engine import TTSEngine, inference_context, rocm_sdpa_context
 
 
 class Qwen317BaseTTSEngine(TTSEngine):
     def __init__(self):
         from qwen_tts import Qwen3TTSModel
         import torch
+        from engine.index import attn_implementation
 
         self.model = Qwen3TTSModel.from_pretrained(
             "Qwen/Qwen3-TTS-12Hz-1.7B-Base",
-            device_map="cuda:0",
+            device_map=config.DEVICE,
             dtype=torch.bfloat16,
-            attn_implementation="flash_attention_2",
+            attn_implementation=attn_implementation(),
         )
 
     def generate_audio(
@@ -38,16 +39,14 @@ class Qwen317BaseTTSEngine(TTSEngine):
 
         prompt_items = self.model.create_voice_clone_prompt(
             ref_audio=voice_file,
-            # ref_text=ref_text,
             x_vector_only_mode=True,
         )
 
-        # Generate the waveform
-        wavs, sample_rate = self.model.generate_voice_clone(
-            text=chunks,
-            # language="English",
-            voice_clone_prompt=prompt_items,
-        )
+        with rocm_sdpa_context(), inference_context():
+            wavs, sample_rate = self.model.generate_voice_clone(
+                text=chunks,
+                voice_clone_prompt=prompt_items,
+            )
 
         all_audio_data = np.concatenate(wavs)
         bytes_object = utils.encode_audio(all_audio_data, sample_rate, output_format)
